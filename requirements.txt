@@ -3,3 +3,6 @@ anthropic>=0.40.0     # Anthropic provider (used when model = claude-*)
 openai>=1.30.0        # OpenAI-compatible providers (Ollama, OpenAI, Gemini, etc.)
 httpx>=0.27.0         # HTTP client
 rich>=13.0.0          # Terminal output / tables / panels
+
+# DGM evolution mechanics (extracted to a generic library)
+dgm-runner @ git+https://github.com/Crows12138/dgm-runner.git@main
