@@ -3,7 +3,7 @@ import os
 import json
 from pathlib import Path
 
-CONFIG_DIR   = Path.home() / ".nano_claude"
+CONFIG_DIR   = Path.home() / ".evolving_coding_agent"
 CONFIG_FILE  = CONFIG_DIR  / "config.json"
 HISTORY_FILE = CONFIG_DIR  / "input_history.txt"
 SESSIONS_DIR = CONFIG_DIR  / "sessions"

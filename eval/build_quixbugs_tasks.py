@@ -1,4 +1,4 @@
-"""把 QuixBugs 改造成 nano-claude 的 eval 任务格式。
+"""把 QuixBugs 改造成 evolving-coding-agent 的 eval 任务格式。
 
 QuixBugs 是 40 个经典算法的单行 bug 集合 (MIT License)。
 这个 adapter 把它们转成 eval/tasks/qb_<name>/{issue.md, X.py, test_X.py, X.json}

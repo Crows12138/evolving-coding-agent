@@ -120,8 +120,8 @@ register_tool(ToolDef(
                     "type": "string",
                     "enum": ["user", "project"],
                     "description": (
-                        "'user' (default) = ~/.nano_claude/memory/ shared across projects; "
-                        "'project' = .nano_claude/memory/ local to this project"
+                        "'user' (default) = ~/.evolving_coding_agent/memory/ shared across projects; "
+                        "'project' = .evolving_coding_agent/memory/ local to this project"
                     ),
                 },
             },

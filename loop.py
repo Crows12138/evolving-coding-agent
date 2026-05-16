@@ -37,7 +37,7 @@ class LoopSession:
 
     def __init__(self, task: str, verify_cmd: str):
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.dir = Path.home() / ".nano_claude" / "loops" / ts
+        self.dir = Path.home() / ".evolving_coding_agent" / "loops" / ts
         self.dir.mkdir(parents=True, exist_ok=True)
         self.task = task
         self.verify_cmd = verify_cmd
@@ -217,7 +217,7 @@ def improvement_loop(
     Args:
         task: 要完成的任务描述
         verify_cmd: 验证命令（返回 0 表示通过）
-        config: nano-claude-code 配置
+        config: evolving-coding-agent 配置
         max_rounds: 最大循环轮数
         auto_commit: 是否每轮自动 git commit
 

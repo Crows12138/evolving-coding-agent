@@ -4,7 +4,7 @@
 Agent 需要读 issue → 分析代码 → 修复 → 让测试通过
 
 用法:
-    cd nano-claude-code
+    cd evolving-coding-agent
     python eval/run_eval.py [--max-rounds 3] [--model ollama/qwen3.5-16k]
 """
 
