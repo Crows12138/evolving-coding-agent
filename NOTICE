@@ -1,0 +1,21 @@
+evolving-coding-agent
+Copyright 2026 Crows12138
+
+This product includes software developed at SafeRL-Lab
+(https://github.com/SafeRL-Lab/nano-claude-code), licensed under Apache 2.0.
+
+The base coding agent runtime (agent.py, providers.py, tools.py, context.py,
+config.py, compaction.py, memory.py, tool_registry.py) is forked from
+nano-claude-code with optimizations for local small models.
+
+Original contributions in this repository:
+  - eval/evolve.py — DGM (Darwin Gödel Machine) self-evolution driver
+  - eval/run_eval.py — eval harness with Circle Loop integration
+  - eval/build_quixbugs_tasks.py — QuixBugs adapter
+  - eval/smoke_test.py — pipeline sanity check
+  - eval/tasks/task_01..task_13 — 13 hand-rolled bug-fix tasks
+  - loop.py — Circle Loop iterative improvement engine
+
+Evaluation tasks under eval/tasks/qb_* are derived from QuixBugs
+(https://github.com/jkoppel/QuixBugs), MIT License,
+Copyright (c) 2017 James Koppel.

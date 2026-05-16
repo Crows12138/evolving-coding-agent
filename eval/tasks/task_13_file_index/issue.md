@@ -1,0 +1,1 @@
+文件索引器在搜索和统计功能上有多个问题：search 区分大小写导致搜索不全，find_duplicates 按文件名而非内容判断重复，get_stats 不递归统计子目录，index_dir 未跳过隐藏文件。

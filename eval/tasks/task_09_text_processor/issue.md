@@ -1,0 +1,1 @@
+文本处理工具在多个函数中存在问题：word_count 统计不准确，sentence_split 在含缩写的句子中错误断句，extract_emails 匹配到非法邮箱地址，slug 生成在连续特殊字符时产生多余连字符。
