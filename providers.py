@@ -285,7 +285,9 @@ def messages_to_openai(messages: list) -> list:
             result.append({"role": "user", "content": m["content"]})
 
         elif role == "assistant":
-            msg: dict = {"role": "assistant", "content": m.get("content") or None}
+            # Ollama 0.24+ 拒收 content=None 的 assistant 消息 (返回 400
+            # "invalid message content type: <nil>"). 用空字符串代替。
+            msg: dict = {"role": "assistant", "content": m.get("content") or ""}
             tcs = m.get("tool_calls", [])
             if tcs:
                 msg["tool_calls"] = []
