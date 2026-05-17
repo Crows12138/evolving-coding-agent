@@ -1,6 +1,7 @@
 """Tool definitions and implementations for nano claude."""
 import json
 import os
+import sys
 import re
 import glob as _glob
 import difflib
@@ -72,7 +73,7 @@ TOOL_SCHEMAS = [
             "type": "object",
             "properties": {
                 "command": {"type": "string"},
-                "timeout": {"type": "integer", "description": "Seconds before timeout (default 30)"},
+                "timeout": {"type": "integer", "description": "Seconds before timeout (default 120, hard max 120)"},
             },
             "required": ["command"],
         },
@@ -233,20 +234,67 @@ def _edit(file_path: str, old_string: str, new_string: str, replace_all: bool = 
         return f"Error: {e}"
 
 
-def _bash(command: str, timeout: int = 30) -> str:
+_BASH_MAX_TIMEOUT = 120  # 硬上限,agent 传更大值会被 clamp 到这里
+
+
+def _kill_process_tree(pid: int) -> None:
+    """杀掉一个进程以及它派生的所有子进程。
+
+    Windows 上 subprocess.run(..., timeout=...) 只杀直接子进程 (通常是 cmd.exe)
+    然后 *等管道关闭*,如果孙进程 (python.exe) 还在写就死等到死。所以我们直接
+    用 taskkill /F /T 强制递归杀整棵树。
+    """
+    if sys.platform == "win32":
+        try:
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(pid)],
+                capture_output=True, timeout=5,
+            )
+        except Exception:
+            pass
+    else:
+        import signal
+        try:
+            os.killpg(os.getpgid(pid), signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
+
+
+def _bash(command: str, timeout: int = _BASH_MAX_TIMEOUT) -> str:
+    """Run a shell command with a hard wall-clock timeout (max 120s).
+
+    Agent-provided timeout is clamped to [_BASH_MAX_TIMEOUT]. On timeout, the
+    whole process tree is killed via taskkill /T (Windows) or killpg (Unix),
+    so grandchildren can't keep CPU busy after we report timeout.
+    """
+    timeout = max(1, min(int(timeout), _BASH_MAX_TIMEOUT))
+    popen_kwargs = dict(
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        text=True, shell=True, cwd=os.getcwd(),
+    )
+    if sys.platform != "win32":
+        popen_kwargs["start_new_session"] = True  # so killpg works
+
     try:
-        r = subprocess.run(
-            command, shell=True, capture_output=True, text=True,
-            timeout=timeout, cwd=os.getcwd(),
-        )
-        out = r.stdout
-        if r.stderr:
-            out += ("\n" if out else "") + "[stderr]\n" + r.stderr
-        return out.strip() or "(no output)"
-    except subprocess.TimeoutExpired:
-        return f"Error: timed out after {timeout}s"
+        proc = subprocess.Popen(command, **popen_kwargs)
     except Exception as e:
         return f"Error: {e}"
+
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        _kill_process_tree(proc.pid)
+        # 给一点时间让管道关闭,但不无限等
+        try:
+            stdout, stderr = proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            stdout, stderr = "", ""
+        return f"Error: timed out after {timeout}s (process tree killed)"
+
+    out = stdout or ""
+    if stderr:
+        out += ("\n" if out else "") + "[stderr]\n" + stderr
+    return out.strip() or "(no output)"
 
 
 def _glob(pattern: str, path: str = None) -> str:
@@ -417,7 +465,7 @@ def _register_builtins() -> None:
         ToolDef(
             name="Bash",
             schema=_schemas["Bash"],
-            func=lambda p, c: _bash(p["command"], p.get("timeout", 30)),
+            func=lambda p, c: _bash(p["command"], p.get("timeout", _BASH_MAX_TIMEOUT)),
             read_only=False,
             concurrent_safe=False,
         ),
